@@ -7,7 +7,6 @@ import com.freestack.evaluation.models.User;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import javax.persistence.TypedQuery;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -111,7 +110,6 @@ public class UberApi {
         try {
 
             booking1.setEvaluation(evaluationOfTheUser);
-            entityManager.persist(booking1);
             System.out.println(booking + " à été évalué à " + evaluationOfTheUser + " étoiles");
             entityManager.getTransaction().commit();
         } finally {
@@ -140,6 +138,7 @@ public class UberApi {
                 entityManager.close();
             }
         }
+        entityManager.close();
         return null;
     }
 
@@ -153,7 +152,6 @@ public class UberApi {
                 .createQuery("SELECT b FROM Booking b WHERE b.endOfBooking IS NULL");
 
         List<Booking> UnFinishedBookingList = (List<Booking>) queryUnFinishedBookingList.getResultList();
-        System.out.println(UnFinishedBookingList.size());
 
         if (UnFinishedBookingList.size() > 0) {
             try {
@@ -163,25 +161,39 @@ public class UberApi {
             } finally {
                 entityManager.close();
             }
-        } return null ;
+        }
+        entityManager.close();
+        return null;
     }
 
-        public static Float meanScore (Driver driver){
-            EntityManager entityManager = EntityManagerFactorySingleton
-                    .getInstance().createEntityManager();
-            entityManager.getTransaction().begin();
+    public static Float meanScore(Driver driver) {
+        EntityManager entityManager = EntityManagerFactorySingleton
+                .getInstance().createEntityManager();
+        entityManager.getTransaction().begin();
+
+
+        Query queryOfFinishedBookingByDriver = entityManager
+                .createQuery("SELECT b FROM Booking b WHERE b.endOfBooking IS NOT NULL AND b" +
+                        ".driver = :driver");
+        queryOfFinishedBookingByDriver.setParameter("driver", driver);
+        List<Booking> FinishedBookingByDriver =
+                (List<Booking>) queryOfFinishedBookingByDriver.getResultList();
+
+        if (FinishedBookingByDriver.size() > 0) {
 
             Query queryAvgScoreOfFinishedBookingByDriver = entityManager
                     .createQuery("SELECT AVG(b.evaluation) FROM Booking b WHERE b.endOfBooking IS NOT NULL AND b" +
                             ".driver = :driver");
             queryAvgScoreOfFinishedBookingByDriver.setParameter("driver", driver);
             Double avgScore = (Double) queryAvgScoreOfFinishedBookingByDriver.getSingleResult();
-
             try {
-                System.out.println("Le score moyen du " +driver+ " est de "+ avgScore+ " étoiles");
+                System.out.println("Le score moyen du " + driver + " est de " + avgScore + " étoiles");
                 return avgScore.floatValue();
             } finally {
                 entityManager.close();
             }
         }
+        entityManager.close();
+        return null;
     }
+}
