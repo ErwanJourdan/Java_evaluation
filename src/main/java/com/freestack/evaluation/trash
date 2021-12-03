@@ -1,0 +1,39 @@
+ /*Query queryAllMovies = entityManager.createQuery("select m from Movie m");
+
+            List<Movie> movies = queryAllMovies.getResultList();
+            out.println("list of movies");
+            movies.forEach(movie -> {
+                out.println(movie);*/
+
+
+
+
+
+//            if (!drivers.isEmpty()) {
+//                for (Driver driver : drivers) {
+//                    if (driver.getAvailable()) {
+//                        entityManager.getTransaction().begin();
+//                        Booking booking = new Booking();
+//                        booking.setDriver(driver);
+//                        booking.setUser(user);
+//                        booking.setStartOfBooking(Instant.now());
+//                        bookingList.add(booking);
+//                        entityManager.persist(booking);
+//                        Query queryDriverId =  entityManager.createQuery("SELECT d FROM Driver d WHERE d.id =" +
+//                                " :id");
+//                        queryDriverId.setParameter("id",1L);
+//                        Driver resultDriverId = (Driver) queryDriverId.getSingleResult();
+//
+//
+////                        Driver resultDriverId =  (Driver) queryDriverId.getSingleResult();
+////                        Query queryDriver = entityManager.createQuery("SELECT d FROM Driver d WHERE d.id = :id");
+////                        queryDriver.setParameter("id", resultDriverId);
+////                        Driver resultDriver = (Driver)  queryDriver.getSingleResult();
+//                        driver.setAvailable(false);
+////                        resultDriver.setAvailable(false);
+////                        entityManager.merge(resultDriver);
+//                        System.out.println(booking +" à été lancée");
+//                        entityManager.getTransaction().commit();
+//                        return booking;
+//                    }
+//                }
