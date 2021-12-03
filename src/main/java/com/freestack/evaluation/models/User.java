@@ -15,6 +15,8 @@ public class User {
     @Column(nullable = false)
     private String lastname;
 
+    public User() {}
+
     public User(String firstname, String lastname) {
         this.firstname = firstname;
         this.lastname = lastname;
