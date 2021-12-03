@@ -37,7 +37,7 @@ public class Main {
             "we should not found any free");
 
         UberApi.finishBooking(booking1);
-//        int evaluationOfTheUser = 5;
+        int evaluationOfTheUser = 5;
 //        UberApi.evaluateDriver(booking1, evaluationOfTheUser);
 //
 //        List<Booking> bookings = UberApi.listDriverBookings(uberDriver);

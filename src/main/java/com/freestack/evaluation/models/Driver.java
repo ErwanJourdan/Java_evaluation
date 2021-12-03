@@ -27,7 +27,7 @@ public class Driver {
 
     @Override
     public String toString() {
-        return ("Chauffeur : "+ firstname + " " + lastname+ ", libre : " + available );
+        return ("Chauffeur : "+ firstname + " " + lastname );
     }
 
     public Long getId() {

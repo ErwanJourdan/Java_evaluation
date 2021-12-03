@@ -15,7 +15,6 @@ import java.util.List;
 public class UberApi {
 
     private static List<User> users = new ArrayList<>();
-    private static List<Driver> driversAvailable = new ArrayList<>();
     private static List<Booking> bookingList = new ArrayList<>();
 
     public static void enrollUser(User user){
@@ -38,7 +37,6 @@ public class UberApi {
         try {
             entityManager.getTransaction().begin();
             driver.setAvailable(true);
-            driversAvailable.add(driver);
             entityManager.persist(driver);
             System.out.println(driver +" à été ajouté");
             entityManager.getTransaction().commit();
@@ -50,8 +48,14 @@ public class UberApi {
     public static Booking bookOneDriver(User user){
         EntityManager entityManager = EntityManagerFactorySingleton
                 .getInstance().createEntityManager();
-        System.out.println(driversAvailable.size());
-        if(driversAvailable.size()>0){
+
+        Query queryListDriverFree = entityManager
+                .createQuery("SELECT d FROM Driver d WHERE d.available=true");
+
+        List<Driver> queryFreeFreeDriver =  (List<Driver>) queryListDriverFree.getResultList();
+        System.out.println("Nombre de chauffeurs disponible : " + queryFreeFreeDriver.size());
+
+        if(queryFreeFreeDriver.size()>0){
             try {
                 entityManager.getTransaction().begin();
                 Query queryDriverFree = entityManager
@@ -63,7 +67,6 @@ public class UberApi {
                 booking.setUser(user);
                 booking.setDriver(queryFreeDriver);
                 booking.setStartOfBooking(Instant.now());
-                driversAvailable.remove(queryFreeDriver);
                 queryFreeDriver.setAvailable(false);
                 System.out.println(booking+ "Est lancée");
                 entityManager.persist(booking);
@@ -81,10 +84,16 @@ public class UberApi {
                 .getInstance().createEntityManager();
         try {
             entityManager.getTransaction().begin();
-            booking.getDriver().setAvailable(true);
-            booking.setEndOfBooking(Instant.now());
-            System.out.println(booking +" est terminée");
+
+            Query queryBooking = entityManager
+                    .createQuery("SELECT b FROM Booking b WHERE b.id = :id");
+            queryBooking.setParameter("id", booking.getId());
+            Booking booking1 = (Booking) queryBooking.getSingleResult();
+
+            booking1.getDriver().setAvailable(true);
+            booking1.setEndOfBooking(Instant.now());
             entityManager.getTransaction().commit();
+            System.out.println(booking +" est terminée");
             return booking;
         } finally {
             entityManager.close();
