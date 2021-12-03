@@ -24,6 +24,6 @@ workflows:
   say-hello-workflow:
     jobs:
       - say-hello:
-        filters:
+          filters:
             branches:
                 only: /^circleci-project-setup.*/
