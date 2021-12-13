@@ -51,15 +51,16 @@ public class UberApi {
         Query queryListDriverFree = entityManager
                 .createQuery("SELECT d FROM Driver d WHERE d.available=true");
 
-        List<Driver> queryFreeFreeDriver = (List<Driver>) queryListDriverFree.getResultList();
-        System.out.println("Nombre de chauffeurs disponible : " + queryFreeFreeDriver.size());
+        // retourner la liste des drivers pour n en avoir que le nombre est dommage, hibernate va instancier n objets (ce qui peut être vraiment beaucoup sur une DB de production) alors qu'on ne les utilise pas
+        Integer freeDriverCount = (List<Driver>) queryListDriverFree.getMaxResults();
+        System.out.println("Nombre de chauffeurs disponible : " + freeDriverCount);
 
-        if (queryFreeFreeDriver.size() > 0) {
+        if (freeDriverCount > 0) {
             try {
                 entityManager.getTransaction().begin();
                 Query queryDriverFree = entityManager
                         .createQuery("SELECT d FROM Driver d WHERE d.available=true");
-
+                //setMaxResults(1) est pertinent
                 Driver queryFreeDriver = (Driver) queryDriverFree.setMaxResults(1).getSingleResult();
                 System.out.println(queryFreeDriver);
                 Booking booking = new Booking(user);
@@ -120,28 +121,26 @@ public class UberApi {
     public static List<Booking> listDriverBookings(Driver driver) {
         EntityManager entityManager = EntityManagerFactorySingleton
                 .getInstance().createEntityManager();
-        entityManager.getTransaction().begin();
+        //on a pas besoin de transaction en lecture seule
 
         Query queryBookingList = entityManager
                 .createQuery("SELECT b FROM Booking b WHERE b.driver = :driver");
         queryBookingList.setParameter("driver", driver);
 
         List<Booking> bookingList = (List<Booking>) queryBookingList.getResultList();
-
-        if (bookingList.size() > 0) {
-            try {
-
+        // on evite les doublons de code
+        try {
+            if (bookingList.size() > 0) {
                 System.out.println("Liste des courses du conduteur  " + driver + " " + bookingList);
-                entityManager.getTransaction().commit();
                 return bookingList;
-            } finally {
-                entityManager.close();
             }
+            return null;
+        } finally {
+            entityManager.close();
         }
-        entityManager.close();
-        return null;
     }
 
+    //meme commentaire qu au dessus , doublons de code et transactions
     public static List<Booking> listUnfinishedBookings() {
         EntityManager entityManager = EntityManagerFactorySingleton
                 .getInstance().createEntityManager();
@@ -169,9 +168,10 @@ public class UberApi {
     public static Float meanScore(Driver driver) {
         EntityManager entityManager = EntityManagerFactorySingleton
                 .getInstance().createEntityManager();
-        entityManager.getTransaction().begin();
-
-
+        
+        //cela apporte de la confusion, on peut légitimement supposer que si il y a une note, c est une évaluation à prendre en compte 
+        //et que elle n'est pas à conidérer seulement si il y a la présence de la date de fin, cela simplifie le code
+        /*entityManager.getTransaction().begin();
         Query queryOfFinishedBookingByDriver = entityManager
                 .createQuery("SELECT b FROM Booking b WHERE b.endOfBooking IS NOT NULL AND b" +
                         ".driver = :driver");
@@ -195,5 +195,11 @@ public class UberApi {
         }
         entityManager.close();
         return null;
+        */
+        Query query = em.createQuery("SELECT AVG(b.evaluation) FROM Booking b WHERE b.uberDriver= :uberD");
+        query.setParameter("uberD", uberDriver);
+        Double result = (Double) query.getSingleResult();
+        float newResult = result.floatValue();
+        return newResult;
     }
 }
